@@ -96,11 +96,11 @@ Will output just the glyphs `+-.0123456789` and replace `,` and `/` with a hollo
 
 `python font_packer.py --height=10,12,14,16,20,24,36 --range=32-126 --code arial.ttf arial`
 
-Will output just readable ASCII glyphs into code file 'arial.cpp' file. Header file 'arial.h' is also created.
+Will output just readable ASCII glyphs into code file 'arial.cpp'. Header file 'arial.h' is also created.
 
 `python font_packer.py --height=10,12,14,16,20 --range=32-126,193,268,270,201,282,205,327,211,344,352,356,218,366,221,381,225,269,271,233,283,237,328,243,345,353,357,250,367,253,382 --code arial.ttf arial`
 
-Will output just readable ASCII and czech unicode glyphs into code file 'arial.cpp' file. Header file 'arial.h' is also created.
+Will output just readable ASCII and czech unicode glyphs into code file 'arial.cpp'. Header file 'arial.h' is also created.
 
 Assuming the `CopyFileFromSerial.ino` sketch is running on the Teensy, you can upload the file like this:
 
