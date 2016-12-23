@@ -48,7 +48,7 @@ The main application is `font_packer.py`:
     Options:
         -h --help                   Show this screen.
         --version                   Show version.
-        --height=<pixels>           The maximum height of the glyphs.
+        --height=<pixels>           The maximum height of the glyphs. More sizes could be specified. 
         --range=<range-string>      A range of Unicode codepoints to generate glyphs for [default: 32-126].
         --packed                    Sends the packed binary bitmap font to output or stdout.
         --code                      Generates C structs to output or stdout.
@@ -58,7 +58,8 @@ The main application is `font_packer.py`:
 It generates a bitmap font from a TrueType or OpenType font (or any other font supported by
 [FreeType2](https://www.freetype.org/freetype2/docs/ft2faq.html))
 
-`--height` The height of the font in pixels. This isn't necessarily the actual height of the final bitmap due to space 
+`--height` The height of the font in pixels. It could be specified by one or more comma separated height values (ex.: 10,12,16). 
+This isn't necessarily the actual height of the final bitmap due to space 
 for accents and so on; the bitmap you see on your screen will be smaller. But it is what FreeType2 uses, and it is
 comparable to using non-antialiased type with no hinting in GIMP.
 
@@ -92,6 +93,10 @@ can be found here.
 `python font_packer.py --height=36 --range=43,45,46,48-57 --packed arial.ttf numbers.bin`
 
 Will output just the glyphs `+-.0123456789` and replace `,` and `/` with a hollow rectangle.
+
+`python font_packer.py --height=10,12,14,16,20,24,36 --range=32-126 --code arial.ttf arial`
+
+Will output just readable ASCII glyphs into code file 'arial.cpp' file. Header file 'arial.h' is also created.
 
 Assuming the `CopyFileFromSerial.ino` sketch is running on the Teensy, you can upload the file like this:
 

@@ -38,7 +38,16 @@ from font import Font
 from range_parser import parse_disjoint_range
 
 
-def generate(height, codepoints, font_file_path, output_file_name, packed, code, smoke):
+def generate(heights, codepoints, font_file_path, output_file_name, packed, code, smoke):
+  if code:
+    fcode = sys.stdout.buffer
+    c = io.StringIO()
+    c.write('#include <' + output_file_name + '.h>\n')
+
+    if output_file_name is not None:
+      fcode = open(output_file_name + ".cpp", 'wb')
+            
+  for height in heights:   
     font = Font(font_file_path, height)
 
     if smoke:
@@ -127,7 +136,7 @@ def generate(height, codepoints, font_file_path, output_file_name, packed, code,
         f = sys.stdout.buffer
 
         if output_file_name is not None:
-            f = open(output_file_name, 'wb')
+            f = open(output_file_name + '_' + str(height) + '.bin', 'wb')
 
         f.write(struct.pack('<3I14Bxx', *tuple(ili9341_t3_font.values())))
         index_bits.tofile(f)
@@ -136,15 +145,10 @@ def generate(height, codepoints, font_file_path, output_file_name, packed, code,
         f.close()
 
     if code:
-        f = sys.stdout.buffer
-
-        if output_file_name is not None:
-            f = open(output_file_name, 'wb')
-
         variable_name = os.path.splitext(os.path.basename(font_file_path))[0] + '_' + str(height)
-        c = io.StringIO()
+        #c = io.StringIO()
 
-        c.write('// extern const ILI9341_t3_font_t {};\n\n'.format(variable_name))
+        c.write('\n// extern const ILI9341_t3_font_t {};\n\n'.format(variable_name))
 
         c.write('static const unsigned char {}_data[] = {{\n'.format(variable_name))
         data_byte_array = ['0x' + binascii.hexlify(bytes([x])).decode() for x in output_data]
@@ -187,7 +191,27 @@ def generate(height, codepoints, font_file_path, output_file_name, packed, code,
         c.write('    {}\n'.format(ili9341_t3_font['cap_height']))
         c.write('};\n')
 
-        f.write(c.getvalue().encode('ascii'))
+        
+        
+  if(code):
+     fcode.write(c.getvalue().encode('ascii'))
+     fcode.close()
+        
+     fcode = open(output_file_name + ".h", 'wb')
+        
+     c = io.StringIO()
+     c.write('#ifndef _ILI9341_ESP_' + output_file_name + '\n') 
+     c.write('#define _ILI9341_ESP_' + output_file_name + '\n\n') 
+     c.write('#include <ILI9341_ESP.h>\n\n')
+     c.write('#ifdef __cplusplus\nextern "C" {\n#endif\n\n')   
+     
+     for height in heights:
+       c.write('extern const ILI9341_t3_font_t ' + output_file_name + '_' + str(height) + ';\n')
+     
+     c.write('#ifdef __cplusplus\n} //extern "C" {\n#endif\n\n')      
+     c.write('#endif')  
+     fcode.write(c.getvalue().encode('ascii'))   
+     fcode.close()     
 
 
 def pack_glyph(glyph, ili9341_t3_font):
@@ -253,6 +277,11 @@ if __name__ == '__main__':
 
     if len(invalid) > 0:
         sys.stderr.write('Warning, invalid values in range: {}'.format(invalid))
+        
+    h, invalid = parse_disjoint_range(args['--height'])        
+    
+    if len(invalid) > 0:
+        sys.stderr.write('Warning, invalid height values in range: {}'.format(invalid))    
 
-    generate(int(args['--height']), r, args['<font-file>'], args['<output>'], args['--packed'], args['--code'],
+    generate(h, r, args['<font-file>'], args['<output>'], args['--packed'], args['--code'],
              args['--smoke'])
